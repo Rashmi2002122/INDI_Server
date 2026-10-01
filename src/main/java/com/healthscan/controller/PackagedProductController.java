@@ -51,4 +51,9 @@ public class PackagedProductController {
     public ResponseEntity<Map<String, Object>> getProductAlternatives(@PathVariable("barcode") String barcode) {
         return ResponseEntity.ok(Map.of("alternatives", new ArrayList<>()));
     }
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, String>> healthCheck() {
+        return ResponseEntity.ok(Map.of("status", "UP", "service", "healthscan-backend"));
+    }
 }
