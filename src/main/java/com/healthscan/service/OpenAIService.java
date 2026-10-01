@@ -409,19 +409,35 @@ public class OpenAIService {
             return "unknown";
         }
         try {
-            String payload = "{\"model\": \"gpt-4o-mini\", \"messages\": [{\"role\": \"user\", \"content\": \"Identify the food in this image and return only the name in lowercase.\"}], \"max_tokens\": 50}";
+            String imageUrl = imageBase64.startsWith("data:image/")
+                    ? imageBase64
+                    : "data:image/jpeg;base64," + imageBase64;
+            Map<String, Object> imageContent = Map.of(
+                    "type", "image_url",
+                    "image_url", Map.of("url", imageUrl));
+            Map<String, Object> textContent = Map.of(
+                    "type", "text",
+                    "text", "Identify the food in this image and return only the name in lowercase.");
+            Map<String, Object> userMessage = Map.of(
+                    "role", "user",
+                    "content", List.of(textContent, imageContent));
+            Map<String, Object> payload = Map.of(
+                    "model", "gpt-4o-mini",
+                    "messages", List.of(userMessage),
+                    "max_tokens", 50);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(apiKey);
 
-            HttpEntity<String> request = new HttpEntity<>(payload, headers);
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(openAiUrl, request, String.class);
 
             String body = response.getBody();
             String content = extractContent(body);
             return content != null ? content.trim().toLowerCase() : "unknown";
         } catch (Exception e) {
+            System.err.println("OpenAI image recognition failed: " + e.getMessage());
             return "unknown";
         }
     }
