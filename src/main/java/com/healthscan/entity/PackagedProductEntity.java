@@ -45,6 +45,7 @@ public class PackagedProductEntity {
     private Double fiber;
     private Double sodium;
 
+    @Lob
     @Column(name = "raw_json", columnDefinition = "LONGTEXT")
     private String rawJson;
 

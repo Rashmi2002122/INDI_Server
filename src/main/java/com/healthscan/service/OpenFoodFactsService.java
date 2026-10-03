@@ -17,6 +17,7 @@ import java.util.Optional;
  * Service that manages packaged food barcode lookups with Aiven MySQL DB caching and Live API fallback.
  */
 @Service
+@Transactional
 public class OpenFoodFactsService {
 
     private final RestTemplate restTemplate = new RestTemplate();
