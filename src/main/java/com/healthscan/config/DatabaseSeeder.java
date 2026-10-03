@@ -1,13 +1,7 @@
 package com.healthscan.config;
 
-import com.healthscan.entity.FoodAliasEntity;
-import com.healthscan.entity.FoodNutritionEntity;
-import com.healthscan.entity.FoodPreparationEntity;
-import com.healthscan.entity.FreshFoodEntity;
-import com.healthscan.repository.FoodAliasRepository;
-import com.healthscan.repository.FoodNutritionRepository;
-import com.healthscan.repository.FoodPreparationRepository;
-import com.healthscan.repository.FreshFoodRepository;
+import com.healthscan.entity.*;
+import com.healthscan.repository.*;
 import com.healthscan.service.FoodNutritionService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -22,21 +16,26 @@ public class DatabaseSeeder {
     private final FoodNutritionRepository nutritionRepository;
     private final FoodAliasRepository aliasRepository;
     private final FoodPreparationRepository preparationRepository;
+    private final PackagedProductRepository packagedProductRepository;
 
     public DatabaseSeeder(FreshFoodRepository freshFoodRepository,
                           FoodNutritionRepository nutritionRepository,
                           FoodAliasRepository aliasRepository,
-                          FoodPreparationRepository preparationRepository) {
+                          FoodPreparationRepository preparationRepository,
+                          PackagedProductRepository packagedProductRepository) {
         this.freshFoodRepository = freshFoodRepository;
         this.nutritionRepository = nutritionRepository;
         this.aliasRepository = aliasRepository;
         this.preparationRepository = preparationRepository;
+        this.packagedProductRepository = packagedProductRepository;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void seed() {
-        // Idempotent seeding check: if database already populated, do nothing
-        if (freshFoodRepository.count() >= 30) {
+        seedPackagedProducts();
+
+        // Idempotent seeding check for fresh food
+        if (freshFoodRepository.count() >= 5) {
             return;
         }
 
@@ -74,6 +73,63 @@ public class DatabaseSeeder {
                         new PrepData("fried", "Deep fried paneer", 1.3, 1.6)));
     }
 
+    private void seedPackagedProducts() {
+        if (packagedProductRepository.count() > 0) {
+            return;
+        }
+
+        System.out.println("🌱 Seeding initial Indian packaged products into Aiven MySQL DB...");
+
+        savePackaged("8901058000052", "Amul Taaza Toned Milk", "Amul", "500 ml", "200 ml", "Dairy, Milk",
+                "Toned Milk, Vitamin A, Vitamin D", "Milk", "VEGETARIAN", 59.0, 3.1, 4.7, 4.7, 3.2, 2.0, 0.0, 0.0, 50.0);
+
+        savePackaged("8901063011111", "Parle-G Glucose Biscuits", "Parle", "100 g", "30 g", "Snacks, Biscuits",
+                "Wheat Flour, Sugar, Refined Palm Oil, Invert Sugar Syrup, Raising Agents, Salt, Milk Solids", "Wheat, Milk", "VEGETARIAN", 464.0, 6.5, 78.2, 26.3, 14.3, 6.8, 0.0, 2.1, 280.0);
+
+        savePackaged("8901058852304", "Maggi 2-Minute Noodles", "Nestle", "70 g", "70 g", "Noodles, Fast Food",
+                "Wheat Flour, Palm Oil, Salt, Wheat Gluten, Mineral, Garlic Powder, Onion Powder, Spices", "Wheat", "VEGETARIAN", 427.0, 8.0, 63.5, 2.2, 15.7, 6.8, 0.1, 3.6, 820.0);
+
+        savePackaged("8901030000010", "Tata Salt Iodized", "Tata", "1 kg", "1 g", "Spices, Salt",
+                "Edible Common Salt, Potassium Iodate, Anticaking Agent (INS 536)", "None", "VEGETARIAN", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 38700.0);
+
+        savePackaged("8901491000015", "Kurkure Masala Munch", "PepsiCo", "90 g", "30 g", "Snacks, Chips",
+                "Rice Meal, Corn Meal, Gram Meal, Edible Vegetable Oil, Seasoning (Spices, Salt, Sugar, Mango Powder)", "None", "VEGETARIAN", 558.0, 5.8, 54.0, 1.5, 35.6, 15.3, 0.1, 1.8, 870.0);
+
+        System.out.println("✅ Successfully seeded initial Indian packaged products into Aiven MySQL!");
+    }
+
+    private void savePackaged(String barcode, String name, String brand, String qty, String serving,
+                              String cat, String ing, String allergens, String diet,
+                              double kcal, double protein, double carbs, double sugar, double fat,
+                              double satFat, double transFat, double fiber, double sodium) {
+
+        PackagedProductEntity p = new PackagedProductEntity();
+        p.setBarcode(barcode);
+        p.setProductName(name);
+        p.setBrand(brand);
+        p.setQuantity(qty);
+        p.setServingSize(serving);
+        p.setCategories(cat);
+        p.setIngredientsText(ing);
+        p.setAllergens(allergens);
+        p.setDietCategory(diet);
+        p.setEnergyKcal(kcal);
+        p.setProtein(protein);
+        p.setCarbohydrates(carbs);
+        p.setSugar(sugar);
+        p.setFat(fat);
+        p.setSaturatedFat(satFat);
+        p.setTransFat(transFat);
+        p.setFiber(fiber);
+        p.setSodium(sodium);
+
+        String json = String.format("{\"code\":\"%s\",\"status\":1,\"product\":{\"product_name\":\"%s\",\"brands\":\"%s\",\"quantity\":\"%s\",\"serving_size\":\"%s\",\"ingredients_text\":\"%s\",\"nutriments\":{\"energy-kcal_100g\":%.1f,\"proteins_100g\":%.1f,\"carbohydrates_100g\":%.1f,\"sugars_100g\":%.1f,\"fat_100g\":%.1f,\"sodium_100g\":%.1f}}}",
+                barcode, name, brand, qty, serving, ing.replace("\"", "'"), kcal, protein, carbs, sugar, fat, sodium);
+        p.setRawJson(json);
+
+        packagedProductRepository.save(p);
+    }
+
     private void seedFood(String slug, String name, String category, String emoji,
                           String servingSize, String servingUnit,
                           boolean vegetarian, boolean vegan, boolean glutenFree, boolean lactoseFree,
@@ -83,7 +139,6 @@ public class DatabaseSeeder {
 
         String normalizedName = FoodNutritionService.normalizeQuery(name);
 
-        // Check if entity already exists to avoid duplicate inserts
         if (freshFoodRepository.findBySlug(slug).isPresent() ||
             nutritionRepository.findByNormalizedName(normalizedName).isPresent()) {
             return;
@@ -118,7 +173,7 @@ public class DatabaseSeeder {
         nut.setCholesterol(cholesterol);
         nut.setSource("USDA Nutritional Reference (Development Data)");
         nut.setSourceUrl("https://fdc.nal.usda.gov/");
-        nut.setVerified(false); // Clearly marked as development/test data per requirement 3
+        nut.setVerified(false);
 
         food.setNutrition(nut);
         freshFoodRepository.save(food);
