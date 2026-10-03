@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.healthscan.entity.PackagedProductEntity;
 import com.healthscan.repository.PackagedProductRepository;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
 
@@ -23,8 +26,6 @@ public class OpenFoodFactsService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final PackagedProductRepository packagedProductRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private static final String BASE_URL = "https://world.openfoodfacts.org/api/v2/product";
 
     public OpenFoodFactsService(PackagedProductRepository packagedProductRepository) {
         this.packagedProductRepository = packagedProductRepository;
@@ -56,11 +57,14 @@ public class OpenFoodFactsService {
         // Step 2: Live API Request to Open Food Facts
         try {
             System.out.println("🌐 [LIVE API CALL] Fetching barcode " + cleanBarcode + " from Open Food Facts API...");
-            String url = UriComponentsBuilder.fromHttpUrl(BASE_URL)
-                    .pathSegment(cleanBarcode)
-                    .toUriString();
+            String url = "https://world.openfoodfacts.org/api/v2/product/" + cleanBarcode + ".json";
 
-            String rawJson = restTemplate.getForObject(url, String.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("User-Agent", "INDI-HealthScan-Backend/1.0 (contact@healthscan.app)");
+            HttpEntity<String> entityReq = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entityReq, String.class);
+            String rawJson = response.getBody();
 
             if (rawJson != null) {
                 try {
@@ -99,13 +103,20 @@ public class OpenFoodFactsService {
                 return;
             }
 
-            String productName = product.path("product_name").asText(null);
-            String brand = product.path("brands").asText(null);
-            String quantity = product.path("quantity").asText(null);
-            String servingSize = product.path("serving_size").asText(null);
-            String categories = product.path("categories").asText(null);
-            String ingredientsText = product.path("ingredients_text").asText(null);
-            String allergens = product.path("allergens").asText(null);
+            String productName = product.has("product_name") ? product.path("product_name").asText(null) : null;
+            if (productName == null && product.has("product_name_en")) {
+                productName = product.path("product_name_en").asText(null);
+            }
+            if (productName == null && product.has("product_name_fr")) {
+                productName = product.path("product_name_fr").asText(null);
+            }
+
+            String brand = product.has("brands") ? product.path("brands").asText(null) : null;
+            String quantity = product.has("quantity") ? product.path("quantity").asText(null) : null;
+            String servingSize = product.has("serving_size") ? product.path("serving_size").asText(null) : null;
+            String categories = product.has("categories") ? product.path("categories").asText(null) : null;
+            String ingredientsText = product.has("ingredients_text") ? product.path("ingredients_text").asText(null) : null;
+            String allergens = product.has("allergens") ? product.path("allergens").asText(null) : null;
 
             // Extract nutritional values per 100g
             JsonNode nutriments = product.path("nutriments");
