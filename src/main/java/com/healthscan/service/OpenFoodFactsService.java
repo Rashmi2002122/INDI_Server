@@ -93,6 +93,20 @@ public class OpenFoodFactsService {
     }
 
     /**
+     * Public method to allow caching a product JSON payload directly into Aiven MySQL database.
+     */
+    @Transactional
+    public void saveRawJson(String barcode, String rawJson) {
+        if (barcode == null || rawJson == null) return;
+        try {
+            JsonNode root = objectMapper.readTree(rawJson);
+            saveToDatabase(barcode.trim(), rawJson, root);
+        } catch (Exception e) {
+            System.err.println("⚠️ Warning: Failed to parse and cache rawJson: " + e.getMessage());
+        }
+    }
+
+    /**
      * Parses product fields from Open Food Facts JSON and saves to Aiven MySQL database.
      */
     @Transactional

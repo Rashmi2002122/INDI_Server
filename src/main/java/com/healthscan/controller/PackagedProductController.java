@@ -32,6 +32,17 @@ public class PackagedProductController {
         return ResponseEntity.ok(json);
     }
 
+    @PostMapping("/products/cache")
+    public ResponseEntity<?> cacheProduct(@RequestBody Map<String, Object> payload) {
+        if (payload != null && payload.containsKey("barcode") && payload.containsKey("rawJson")) {
+            String barcode = String.valueOf(payload.get("barcode"));
+            String rawJson = String.valueOf(payload.get("rawJson"));
+            openFoodFactsService.saveRawJson(barcode, rawJson);
+            return ResponseEntity.ok(Map.of("status", "cached", "barcode", barcode));
+        }
+        return ResponseEntity.badRequest().body(Map.of("error", "Missing barcode or rawJson"));
+    }
+
     @GetMapping("/user/goals")
     public ResponseEntity<Map<String, Object>> getUserGoals() {
         return ResponseEntity.ok(Map.of("goals", userGoals));
