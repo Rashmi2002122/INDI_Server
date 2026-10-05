@@ -19,8 +19,15 @@ public class PackagedProductController {
         this.openFoodFactsService = openFoodFactsService;
     }
 
+    private static final String BARCODE_PATTERN = "^[0-9A-Za-z_-]{1,64}$";
+    private static final int MAX_RAW_JSON_LENGTH = 500_000; // 500 KB limit to prevent DoS
+
     @GetMapping("/products/barcode/{barcode}")
     public ResponseEntity<?> getProductByBarcode(@PathVariable("barcode") String barcode) {
+        if (barcode == null || !barcode.matches(BARCODE_PATTERN)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid barcode format"));
+        }
+
         String json = openFoodFactsService.fetchProductByBarcode(barcode);
         if (json == null || json.contains("\"status\":0")) {
             return ResponseEntity.status(404).body(
@@ -35,8 +42,17 @@ public class PackagedProductController {
     @PostMapping("/products/cache")
     public ResponseEntity<?> cacheProduct(@RequestBody Map<String, Object> payload) {
         if (payload != null && payload.containsKey("barcode") && payload.containsKey("rawJson")) {
-            String barcode = String.valueOf(payload.get("barcode"));
-            String rawJson = String.valueOf(payload.get("rawJson"));
+            String barcode = String.valueOf(payload.get("barcode")).trim();
+            String rawJson = String.valueOf(payload.get("rawJson")).trim();
+
+            if (!barcode.matches(BARCODE_PATTERN)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid barcode format"));
+            }
+
+            if (rawJson.length() > MAX_RAW_JSON_LENGTH || !rawJson.startsWith("{")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid JSON payload or payload too large"));
+            }
+
             openFoodFactsService.saveRawJson(barcode, rawJson);
             return ResponseEntity.ok(Map.of("status", "cached", "barcode", barcode));
         }

@@ -14,10 +14,11 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://indi-lovat.vercel.app")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedOriginPatterns("https://*.vercel.app", "https://*.onrender.com", "http://localhost:*", "http://127.0.0.1:*")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")
                         .allowedHeaders("*")
-                        .allowCredentials(false);
+                        .allowCredentials(false)
+                        .maxAge(3600);
             }
         };
     }
