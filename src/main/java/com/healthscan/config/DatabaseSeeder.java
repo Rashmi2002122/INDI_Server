@@ -4,10 +4,12 @@ import com.healthscan.entity.FoodAliasEntity;
 import com.healthscan.entity.FoodNutritionEntity;
 import com.healthscan.entity.FoodPreparationEntity;
 import com.healthscan.entity.FreshFoodEntity;
+import com.healthscan.entity.PackagedProductEntity;
 import com.healthscan.repository.FoodAliasRepository;
 import com.healthscan.repository.FoodNutritionRepository;
 import com.healthscan.repository.FoodPreparationRepository;
 import com.healthscan.repository.FreshFoodRepository;
+import com.healthscan.repository.PackagedProductRepository;
 import com.healthscan.service.FoodNutritionService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -22,19 +24,24 @@ public class DatabaseSeeder {
     private final FoodNutritionRepository nutritionRepository;
     private final FoodAliasRepository aliasRepository;
     private final FoodPreparationRepository preparationRepository;
+    private final PackagedProductRepository packagedProductRepository;
 
     public DatabaseSeeder(FreshFoodRepository freshFoodRepository,
                           FoodNutritionRepository nutritionRepository,
                           FoodAliasRepository aliasRepository,
-                          FoodPreparationRepository preparationRepository) {
+                          FoodPreparationRepository preparationRepository,
+                          PackagedProductRepository packagedProductRepository) {
         this.freshFoodRepository = freshFoodRepository;
         this.nutritionRepository = nutritionRepository;
         this.aliasRepository = aliasRepository;
         this.preparationRepository = preparationRepository;
+        this.packagedProductRepository = packagedProductRepository;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void seed() {
+        seedPackagedDemoProducts();
+
         // Idempotent seeding check: if database already populated, do nothing
         if (freshFoodRepository.count() >= 30) {
             return;
@@ -135,6 +142,38 @@ public class DatabaseSeeder {
                 FoodPreparationEntity prepEntity = new FoodPreparationEntity(food, p.name, p.description, p.calorieMult, p.fatMult);
                 preparationRepository.save(prepEntity);
             }
+        }
+    }
+
+    private void seedPackagedDemoProducts() {
+        try {
+            if (packagedProductRepository.findByBarcode("8901058851234").isEmpty()) {
+                PackagedProductEntity p = new PackagedProductEntity();
+                p.setBarcode("8901058851234");
+                p.setProductName("Amul Malai Fresh Paneer");
+                p.setBrand("Amul");
+                p.setQuantity("200g");
+                p.setServingSize("100g");
+                p.setCategories("Paneer & Dairy, Fresh Dairy");
+                p.setIngredientsText("Pasteurized Toned Milk, Coagulant (Citric Acid). Contains no added preservatives or colors.");
+                p.setAllergens("Milk");
+                p.setDietCategory("VEGETARIAN");
+                p.setEnergyKcal(289.0);
+                p.setProtein(18.0);
+                p.setCarbohydrates(2.0);
+                p.setSugar(1.2);
+                p.setFat(25.0);
+                p.setSaturatedFat(15.0);
+                p.setTransFat(0.0);
+                p.setFiber(0.0);
+                p.setSodium(45.0);
+                String rawJson = "{\"code\":\"8901058851234\",\"product\":{\"product_name\":\"Amul Malai Fresh Paneer\",\"brands\":\"Amul\",\"quantity\":\"200g\",\"serving_size\":\"100g\",\"categories\":\"Paneer & Dairy\",\"ingredients_text\":\"Pasteurized Toned Milk, Coagulant (Citric Acid). Contains no added preservatives or colors.\",\"nutriments\":{\"energy-kcal_100g\":289,\"proteins_100g\":18,\"carbohydrates_100g\":2,\"sugars_100g\":1.2,\"fat_100g\":25,\"saturated-fat_100g\":15,\"sodium_100g\":0.045}},\"status\":1}";
+                p.setRawJson(rawJson);
+                packagedProductRepository.save(p);
+                System.out.println("🌱 [SEEDER] Seeded demo product 8901058851234 (Amul Malai Fresh Paneer) into Aiven MySQL.");
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Warning: Failed to seed demo packaged product: " + e.getMessage());
         }
     }
 
