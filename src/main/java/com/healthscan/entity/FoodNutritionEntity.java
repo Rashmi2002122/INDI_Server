@@ -11,10 +11,6 @@ public class FoodNutritionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "food_id", nullable = true)
-    private FreshFoodEntity food;
-
     @Column(name = "food_name")
     private String foodName;
 
@@ -93,9 +89,6 @@ public class FoodNutritionEntity {
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
-    public FreshFoodEntity getFood() { return food; }
-    public void setFood(FreshFoodEntity food) { this.food = food; }
 
     public String getFoodName() { return foodName; }
     public void setFoodName(String foodName) { this.foodName = foodName; }

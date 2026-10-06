@@ -131,6 +131,10 @@ public class OpenFoodFactsService {
             String categories = product.has("categories") ? product.path("categories").asText(null) : null;
             String ingredientsText = product.has("ingredients_text") ? product.path("ingredients_text").asText(null) : null;
             String allergens = product.has("allergens") ? product.path("allergens").asText(null) : null;
+            String imageUrl = product.has("image_front_url") ? product.path("image_front_url").asText(null) : null;
+            if (imageUrl == null && product.has("image_url")) {
+                imageUrl = product.path("image_url").asText(null);
+            }
 
             // Extract nutritional values per 100g
             JsonNode nutriments = product.path("nutriments");
@@ -155,6 +159,7 @@ public class OpenFoodFactsService {
             entity.setCategories(categories);
             entity.setIngredientsText(ingredientsText);
             entity.setAllergens(allergens);
+            entity.setImageUrl(imageUrl);
             entity.setEnergyKcal(energyKcal);
             entity.setProtein(protein);
             entity.setCarbohydrates(carbs);

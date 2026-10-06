@@ -41,6 +41,9 @@ public class PackagedProductEntity {
     @Column(name = "diet_category", length = 50)
     private String dietCategory;
 
+    @Column(name = "image_url", length = 1000)
+    private String imageUrl;
+
     private Double energyKcal;
     private Double protein;
     private Double carbohydrates;
@@ -138,6 +141,9 @@ public class PackagedProductEntity {
 
     public String getRawJson() { return rawJson; }
     public void setRawJson(String rawJson) { this.rawJson = rawJson; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
