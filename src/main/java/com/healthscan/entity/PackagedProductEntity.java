@@ -41,6 +41,9 @@ public class PackagedProductEntity {
     @Column(name = "diet_category", length = 50)
     private String dietCategory;
 
+    @Column(name = "image_url", length = 1000)
+    private String imageUrl;
+
     private Double energyKcal;
     private Double protein;
     private Double carbohydrates;
@@ -108,6 +111,9 @@ public class PackagedProductEntity {
 
     public String getDietCategory() { return dietCategory; }
     public void setDietCategory(String dietCategory) { this.dietCategory = dietCategory; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public Double getEnergyKcal() { return energyKcal; }
     public void setEnergyKcal(Double energyKcal) { this.energyKcal = energyKcal; }
