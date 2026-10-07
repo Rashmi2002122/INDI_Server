@@ -18,12 +18,19 @@ public class RecipeDto {
     private List<String> method;
     private Map<String, Object> nutrition;
     private String timeToMake;
+    private String imageUrl;
 
     public RecipeDto() {}
 
     public RecipeDto(String id, String name, String slot, List<String> diet, List<String> goals,
                      List<String> allergens, String whyItFits, List<String> ingredients,
                      List<String> method, Map<String, Object> nutrition, String timeToMake) {
+        this(id, name, slot, diet, goals, allergens, whyItFits, ingredients, method, nutrition, timeToMake, null);
+    }
+
+    public RecipeDto(String id, String name, String slot, List<String> diet, List<String> goals,
+                     List<String> allergens, String whyItFits, List<String> ingredients,
+                     List<String> method, Map<String, Object> nutrition, String timeToMake, String imageUrl) {
         this.id = id;
         this.name = name;
         this.slot = slot;
@@ -35,6 +42,7 @@ public class RecipeDto {
         this.method = method;
         this.nutrition = nutrition;
         this.timeToMake = timeToMake;
+        this.imageUrl = imageUrl;
     }
 
     public static List<String> splitList(String commaSeparated) {
@@ -90,4 +98,7 @@ public class RecipeDto {
 
     public String getTimeToMake() { return timeToMake; }
     public void setTimeToMake(String timeToMake) { this.timeToMake = timeToMake; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

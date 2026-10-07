@@ -56,6 +56,9 @@ public class RecipeEntity {
     @Column(name = "time_to_make", length = 50)
     private String timeToMake;
 
+    @Column(name = "image_url", length = 1000)
+    private String imageUrl;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -133,6 +136,9 @@ public class RecipeEntity {
 
     public String getTimeToMake() { return timeToMake; }
     public void setTimeToMake(String timeToMake) { this.timeToMake = timeToMake; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

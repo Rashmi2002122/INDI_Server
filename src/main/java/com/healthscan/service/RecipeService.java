@@ -145,7 +145,8 @@ public class RecipeService {
                 RecipeDto.splitLines(entity.getIngredients()),
                 RecipeDto.splitLines(entity.getMethod()),
                 nutrition,
-                entity.getTimeToMake()
+                entity.getTimeToMake(),
+                entity.getImageUrl()
         );
     }
 }
