@@ -35,9 +35,10 @@ public class RecipeController {
             @RequestParam(value = "goal", required = false, defaultValue = "fat_loss") String goal,
             @RequestParam(value = "allergies", required = false) List<String> allergies,
             @RequestParam(value = "eatenFoods", required = false) List<String> eatenFoods,
-            @RequestParam(value = "limit", required = false, defaultValue = "3") int limit
+            @RequestParam(value = "limit", required = false, defaultValue = "3") int limit,
+            @RequestParam(value = "offset", required = false, defaultValue = "0") int offset
     ) {
-        return ResponseEntity.ok(recipeService.getRecommendedRecipes(slot, dietType, goal, allergies, eatenFoods, limit));
+        return ResponseEntity.ok(recipeService.getRecommendedRecipes(slot, dietType, goal, allergies, eatenFoods, limit, offset));
     }
 
     @PostMapping

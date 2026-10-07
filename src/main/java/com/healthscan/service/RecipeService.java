@@ -33,7 +33,7 @@ public class RecipeService {
 
     @Transactional(readOnly = true)
     public List<RecipeDto> getRecommendedRecipes(String slot, String dietType, String goal, 
-                                                List<String> allergies, List<String> eatenFoods, int limit) {
+                                                List<String> allergies, List<String> eatenFoods, int limit, int offset) {
         List<RecipeEntity> candidates;
         if (slot != null && !slot.isBlank()) {
             candidates = recipeRepository.findBySlotIgnoreCase(slot.trim());
@@ -108,8 +108,17 @@ public class RecipeService {
             return Integer.compare(scoreB, scoreA);
         });
 
-        int max = limit > 0 ? Math.min(limit, mutableList.size()) : mutableList.size();
-        return mutableList.subList(0, max).stream().map(this::toDto).toList();
+        int total = mutableList.size();
+        if (total == 0) return Collections.emptyList();
+        int safeLimit = limit > 0 ? Math.min(limit, total) : total;
+        int safeOffset = Math.max(0, offset);
+        int startIndex = (safeOffset * safeLimit) % total;
+
+        List<RecipeEntity> result = new ArrayList<>();
+        for (int i = 0; i < safeLimit; i++) {
+            result.add(mutableList.get((startIndex + i) % total));
+        }
+        return result.stream().map(this::toDto).toList();
     }
 
     public RecipeEntity saveRecipe(RecipeEntity recipe) {
